@@ -5,7 +5,15 @@ exports.getUserByMatricula = async (req, res) => {
     const { matricula } = req.params;
 
     const [rows] = await db.promise().query(
-      'SELECT nombres, primer_apellido, avatar_accessories, avatar_base FROM alumnos WHERE matricula = ?',
+      `SELECT 
+        a.nombres, 
+        a.primer_apellido,
+        v.imagen_png,
+        v.nombre_imagen,
+        v.accessory
+      FROM alumnos a
+      LEFT JOIN avatar v ON a.id_avatar = v.id_avatar
+      WHERE a.matricula = ?`,
       [matricula]
     );
 
@@ -13,21 +21,13 @@ exports.getUserByMatricula = async (req, res) => {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
 
-    let avatarConfig = null;
-
-    if (rows[0].avatar_accessories) {
-      try {
-        avatarConfig = JSON.parse(rows[0].avatar_accessories);
-      } catch (parseError) {
-        console.error('Error al parsear el avatar:', parseError);
-        avatarConfig = null;
-      }
-    }
+    const avatarConfig = rows[0].accessory ? { accessory: rows[0].accessory } : null;
+    const avatarBase = rows[0].nombre_imagen || null;
 
     const userData = {
-      nombres: rows[0].nombre,
-      primer_apellido: rows[0].apellido,
-      avatarBase: rows[0].avatar_base || 'leon',
+      nombres: rows[0].nombres,
+      primer_apellido: rows[0].primer_apellido,
+      avatarBase: avatarBase || 'leon',
       avatarConfig: avatarConfig
     };
 
@@ -37,6 +37,7 @@ exports.getUserByMatricula = async (req, res) => {
     res.status(500).json({ error: 'Error al obtener el usuario' });
   }
 };
+
 
 
 exports.updateAvatar = async (req, res) => {
@@ -89,4 +90,3 @@ exports.updateAvatar = async (req, res) => {
     res.status(500).json({ error: 'Error al guardar avatar' });
   }
 };
-

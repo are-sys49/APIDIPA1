@@ -175,7 +175,8 @@ exports.login = async (req, res) => {
         primer_apellido: user.primer_apellido,
         segundo_apellido: user.segundo_apellido,
         generacion: user.no_generacion,
-        sede: user.academia,
+        sede: user.sede,
+        academia: user.academia,
         avatarConfig: avatarConfig,
         avatarBase: user.avatar_base || 'leon'
       }
