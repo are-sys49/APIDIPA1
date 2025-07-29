@@ -64,7 +64,7 @@ const validarCodigo = async (req, res) => {
 
   try {
     // Verificar si el alumno existe
-    const [alumno] = await db.promise().query('SELECT id FROM alumnos WHERE id = ?', [alumnoId]);
+    const [alumno] = await db.promise().query('SELECT id FROM alumnos WHERE id_alumno = ?', [alumnoId]);
     if (alumno.length === 0) {
       return res.status(404).json({ valid: false, message: 'Alumno no encontrado' });
     }

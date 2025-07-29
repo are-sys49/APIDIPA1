@@ -3,6 +3,8 @@ const router = express.Router();
 const authController = require('../controllers/authController');
 const userController = require('../controllers/userController');
 
+
+
 // Registrar contraseña (pantalla Continuar)
 router.post('/register', authController.registerPassword);
 

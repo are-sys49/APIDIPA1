@@ -1,4 +1,5 @@
 const db = require('../db/connection');
+const jwt = require('jsonwebtoken');
 
 // Obtener datos del usuario (Reemplazada por la de server.js)
 exports.getUserData = async (req, res) => {
@@ -27,12 +28,14 @@ exports.getUserData = async (req, res) => {
 
     const user = {
       matricula: rows[0].matricula,
-      nombre: rows[0].nombres,
-      app: rows[0].primer_apellido,
-      apm: rows[0].segundo_apellido,
-      gen: rows[0].no_generacion,
+      nombres: rows[0].nombres,
+      primer_apellido: rows[0].primer_apellido,
+      segundo_apellido: rows[0].segundo_apellido,
+      no_generacion: rows[0].no_generacion,
       ciudad: rows[0].ciudad,
       estado: rows[0].estado,
+      academia: rows[0].academia,
+      sede: rows[0].sede
     };
 
     res.json({ user });

@@ -2,8 +2,8 @@ const db = require('../db/connection');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// Registrar nueva contraseña para matrícula
-// Registrar nueva contraseña para matrícula
+
+
 exports.registerPassword = async (req, res) => {
   const { matricula, password } = req.body;
   
@@ -51,7 +51,7 @@ exports.updateAvatar = async (req, res) => {
 
     // Verificar que el usuario existe
     const [existingUser] = await db.promise().query(
-      'SELECT id FROM alumnos WHERE id = ?',
+      'SELECT id_alumno FROM alumnos WHERE id_alumno = ?',
       [userId]
     );
 
@@ -61,7 +61,7 @@ exports.updateAvatar = async (req, res) => {
 
     // Actualizar la configuración del avatar
     await db.promise().query(
-      'UPDATE alumnos SET avatar_accessories = ? WHERE id = ?',
+      'UPDATE alumnos SET avatar_accessories = ? WHERE id_alumno = ?',
       [avatarConfig, userId]
     );
 
@@ -84,7 +84,7 @@ exports.getAvatar = async (req, res) => {
     const { userId } = req.params;
     
     const [result] = await db.promise().query(
-      'SELECT avatar_accessories, avatar_base FROM alumnos WHERE id = ?',
+      'SELECT avatar_accessories, avatar_base FROM alumnos WHERE id_alumno = ?',
       [userId]
     );
 
@@ -118,7 +118,6 @@ exports.getAvatar = async (req, res) => {
 
 // Iniciar sesión
 exports.login = async (req, res) => {
-  // Debug: Verificar que la clave se carga
   console.log('[DEBUG] JWT_SECRET:', process.env.JWT_SECRET ? 'OK' : 'FALTA');
   
   try {
@@ -152,7 +151,7 @@ exports.login = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user.id, matricula: user.matricula },
+      { id_alumno: user.id_alumno, matricula: user.matricula },
       process.env.JWT_SECRET,
       { expiresIn: '8h' }
     );
@@ -170,7 +169,7 @@ exports.login = async (req, res) => {
     return res.json({ 
       token,
       user: {
-        id: user.id,
+        id_alumno: user.id_alumno,
         matricula: user.matricula,
         nombres: user.nombres,
         primer_apellido: user.primer_apellido,
@@ -198,8 +197,8 @@ exports.getCurrentUser = async (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
     const [user] = await db.promise().query(
-      'SELECT id, matricula FROM alumnos WHERE id = ?',
-      [decoded.id]
+      'SELECT id_alumno, matricula FROM alumnos WHERE id_alumno = ?',
+      [decoded.id_alumno]
     );
 
     if (user.length === 0) {
