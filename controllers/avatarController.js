@@ -50,6 +50,9 @@ exports.getAvatarByAlumno = async (req, res) => {
   try {
     const { alumnoId } = req.params;
     
+    console.log('=== DEBUG getAvatarByAlumno ===');
+    console.log('🔍 Buscando avatar para alumnoId:', alumnoId);
+    
     // Query con la estructura completa de la BD
     const query = `
       SELECT 
@@ -69,9 +72,16 @@ exports.getAvatarByAlumno = async (req, res) => {
       LIMIT 1
     `;
     
+    console.log('📡 Ejecutando query:', query);
+    console.log('📡 Con parámetro alumnoId:', alumnoId);
+    
     const [rows] = await db.execute(query, [alumnoId]);
     
+    console.log('📡 Resultados encontrados:', rows.length);
+    console.log('📡 Datos completos:', JSON.stringify(rows, null, 2));
+    
     if (rows.length === 0) {
+      console.log('⚠️ No se encontró avatar para el usuario');
       return res.status(404).json({
         success: false,
         message: 'No se encontró avatar para este usuario'
@@ -80,7 +90,13 @@ exports.getAvatarByAlumno = async (req, res) => {
     
     const avatar = rows[0];
     
-    res.json({
+    console.log('✅ Avatar encontrado:');
+    console.log('  - id_avatar:', avatar.id_avatar);
+    console.log('  - accessory:', avatar.accessory);
+    console.log('  - nombre_imagen:', avatar.nombre_imagen);
+    console.log('  - imagen_png length:', avatar.imagen_png ? avatar.imagen_png.length : 'No existe');
+    
+    const responseData = {
       success: true,
       data: {
         avatarId: avatar.id_avatar,
@@ -95,10 +111,13 @@ exports.getAvatarByAlumno = async (req, res) => {
           segundo_apellido: avatar.segundo_apellido
         }
       }
-    });
+    };
+    
+    console.log('📤 Enviando respuesta:', JSON.stringify(responseData, null, 2));
+    res.json(responseData);
     
   } catch (error) {
-    console.error('Error al obtener avatar:', error);
+    console.error('❌ Error al obtener avatar:', error);
     res.status(500).json({
       success: false,
       message: 'Error interno del servidor',
@@ -106,7 +125,6 @@ exports.getAvatarByAlumno = async (req, res) => {
     });
   }
 };
-
 exports.updateAvatar = async (req, res) => {
   try {
     const { matricula, avatarConfig, imagen_png, nombre_imagen } = req.body;
