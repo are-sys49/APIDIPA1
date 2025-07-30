@@ -10,12 +10,10 @@ exports.getUserData = async (req, res) => {
       `SELECT 
          matricula,
          nombres,
-         primer_apellido,
-         segundo_apellido,
-         no_generacion,
-         academia, 
-         ciudad,
-         estado,
+         primer_apellido AS app,
+         segundo_apellido AS apm,
+         academia,
+         no_generacion AS gen,
          sede
        FROM alumnos
        WHERE matricula = ?`,
@@ -29,12 +27,10 @@ exports.getUserData = async (req, res) => {
     const user = {
       matricula: rows[0].matricula,
       nombres: rows[0].nombres,
-      primer_apellido: rows[0].primer_apellido,
-      segundo_apellido: rows[0].segundo_apellido,
-      no_generacion: rows[0].no_generacion,
-      ciudad: rows[0].ciudad,
-      estado: rows[0].estado,
+      app: rows[0].app,
+      apm: rows[0].apm,
       academia: rows[0].academia,
+      gen: rows[0].gen,
       sede: rows[0].sede
     };
 

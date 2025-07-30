@@ -174,11 +174,9 @@ exports.login = async (req, res) => {
         nombres: user.nombres,
         primer_apellido: user.primer_apellido,
         segundo_apellido: user.segundo_apellido,
-        generacion: user.no_generacion,
+        no_generacion: user.no_generacion,
         sede: user.sede,
         academia: user.academia,
-        avatarConfig: avatarConfig,
-        avatarBase: user.avatar_base || 'leon'
       }
     });
   } catch (error) {

@@ -8,6 +8,7 @@ exports.getUserByMatricula = async (req, res) => {
       `SELECT 
         a.nombres, 
         a.primer_apellido,
+        a.segundo_apellido,
         v.imagen_png,
         v.nombre_imagen,
         v.accessory
