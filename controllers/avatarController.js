@@ -22,37 +22,48 @@ exports.getUserByMatricula = async (req, res) => {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
 
-    const avatarConfig = rows[0].accessory ? { accessory: rows[0].accessory } : null;
-    const avatarBase = rows[0].nombre_imagen || null;
+    // Construir avatarConfig desde la columna accessory de la tabla avatar
+    // Si no hay avatar o accessory es NULL, usar valores por defecto
+    const avatarConfig = rows[0].accessory 
+      ? { accessory: rows[0].accessory } 
+      : { accessory: 'default' };
+    
+    const avatarBase = rows[0].nombre_imagen || 'LeonSimple';
 
     const userData = {
       nombres: rows[0].nombres,
       primer_apellido: rows[0].primer_apellido,
-      avatarBase: avatarBase || 'LeonSimple',
-      avatarConfig: avatarConfig
+      segundo_apellido: rows[0].segundo_apellido,
+      avatarBase: avatarBase,
+      avatarConfig: avatarConfig // Siempre existirá como objeto
     };
 
+    console.log('getUserByMatricula - userData:', JSON.stringify(userData, null, 2));
     res.json(userData);
   } catch (error) {
     console.error('Error al obtener el usuario:', error);
     res.status(500).json({ error: 'Error al obtener el usuario' });
   }
 };
+
 exports.getAvatarByAlumno = async (req, res) => {
   try {
     const { alumnoId } = req.params;
     
-    // Query para obtener el avatar del alumno
+    // Query con la estructura completa de la BD
     const query = `
       SELECT 
-        a.id_avatar as avatar_id,
+        a.id_avatar,
         a.imagen_png,
+        a.nombre_imagen,
         a.accessory,
-        a.fecha_creacion as created_at,
+        a.fecha_creacion,
+        a.fecha_actualizacion,
         al.nombres,
-        al.primer_apellido
-      FROM avatars a
-      INNER JOIN alumnos al ON a.id_alumno = al.id
+        al.primer_apellido,
+        al.segundo_apellido
+      FROM avatar a
+      INNER JOIN alumnos al ON a.id_alumno = al.id_alumno
       WHERE a.id_alumno = ?
       ORDER BY a.fecha_creacion DESC
       LIMIT 1
@@ -72,13 +83,16 @@ exports.getAvatarByAlumno = async (req, res) => {
     res.json({
       success: true,
       data: {
-        avatarId: avatar.avatar_id,
+        avatarId: avatar.id_avatar,
         imagenPng: avatar.imagen_png,
-        accessory: avatar.accessory,
-        createdAt: avatar.created_at,
+        nombreImagen: avatar.nombre_imagen,
+        accessory: avatar.accessory || 'default',
+        fechaCreacion: avatar.fecha_creacion,
+        fechaActualizacion: avatar.fecha_actualizacion,
         alumno: {
           nombres: avatar.nombres,
-          apellido: avatar.primer_apellido
+          primer_apellido: avatar.primer_apellido,
+          segundo_apellido: avatar.segundo_apellido
         }
       }
     });
@@ -93,9 +107,6 @@ exports.getAvatarByAlumno = async (req, res) => {
   }
 };
 
-
-
-
 exports.updateAvatar = async (req, res) => {
   try {
     const { matricula, avatarConfig, imagen_png, nombre_imagen } = req.body;
@@ -104,7 +115,7 @@ exports.updateAvatar = async (req, res) => {
       return res.status(400).json({ error: 'Datos incompletos' });
     }
 
-    // Buscar alumno y su id_avatar actual
+    // Buscar alumno por matrícula
     const [user] = await db.promise().query(
       'SELECT id_alumno, id_avatar FROM alumnos WHERE matricula = ?',
       [matricula]
@@ -117,22 +128,26 @@ exports.updateAvatar = async (req, res) => {
     const userId = user[0].id_alumno;
     const currentAvatarId = user[0].id_avatar;
 
+    // Extraer accessory del avatarConfig
+    const accessory = avatarConfig.accessory || 'default';
+
     if (currentAvatarId) {
-      // Actualizar avatar existente
+      // Actualizar avatar existente en la tabla avatar
       await db.promise().query(
         `UPDATE avatar 
-         SET imagen_png = ?, nombre_imagen = ?, accessory = ?
+         SET imagen_png = ?, nombre_imagen = ?, accessory = ?, fecha_actualizacion = CURRENT_TIMESTAMP
          WHERE id_avatar = ?`,
-        [Buffer.from(imagen_png, 'base64'), nombre_imagen, avatarConfig.accessory, currentAvatarId]
+        [Buffer.from(imagen_png, 'base64'), nombre_imagen, accessory, currentAvatarId]
       );
     } else {
-      // Insertar nuevo avatar
+      // Crear nuevo avatar
       const [insertResult] = await db.promise().query(
-        `INSERT INTO avatar (imagen_png, nombre_imagen, accessory, id_alumno)
-         VALUES (?, ?, ?, ?)`,
-        [Buffer.from(imagen_png, 'base64'), nombre_imagen, avatarConfig.accessory, userId]
+        `INSERT INTO avatar (imagen_png, nombre_imagen, accessory, id_alumno, fecha_creacion, fecha_actualizacion)
+         VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+        [Buffer.from(imagen_png, 'base64'), nombre_imagen, accessory, userId]
       );
-      // Actualizar id_avatar en alumnos
+      
+      // Actualizar la referencia id_avatar en la tabla alumnos
       await db.promise().query(
         'UPDATE alumnos SET id_avatar = ? WHERE id_alumno = ?',
         [insertResult.insertId, userId]
@@ -146,5 +161,3 @@ exports.updateAvatar = async (req, res) => {
     res.status(500).json({ error: 'Error al guardar avatar' });
   }
 };
-
-

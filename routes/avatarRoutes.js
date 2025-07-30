@@ -8,4 +8,8 @@ router.get('/auth/user/:matricula', avatarController.getUserByMatricula);
 // Actualizar avatar
 router.post('/update', avatarController.updateAvatar);
 
+//Obtener avatar por id de alumno 
+router.get('/:alumnoId', avatarController.getAvatarByAlumno);
+
+
 module.exports = router;
