@@ -2,6 +2,7 @@ const db = require('../db/connection');
 const jwt = require('jsonwebtoken');
 
 
+
 // Función auxiliar para comparar horas
 const compareTimes = (time1, time2) => {
   const [h1, m1, s1] = time1.split(':').map(Number);
