@@ -75,7 +75,7 @@ exports.getAvatarByAlumno = async (req, res) => {
     console.log('📡 Ejecutando query:', query);
     console.log('📡 Con parámetro alumnoId:', alumnoId);
     
-    const [rows] = await db.execute(query, [alumnoId]);
+    const [rows] = await db.promise().query(query, [alumnoId]);
     
     console.log('📡 Resultados encontrados:', rows.length);
     console.log('📡 Datos completos:', JSON.stringify(rows, null, 2));
@@ -125,6 +125,7 @@ exports.getAvatarByAlumno = async (req, res) => {
     });
   }
 };
+
 exports.updateAvatar = async (req, res) => {
   try {
     const { matricula, avatarConfig, imagen_png, nombre_imagen } = req.body;
