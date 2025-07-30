@@ -28,7 +28,7 @@ exports.getUserByMatricula = async (req, res) => {
     const userData = {
       nombres: rows[0].nombres,
       primer_apellido: rows[0].primer_apellido,
-      avatarBase: avatarBase || 'leon',
+      avatarBase: avatarBase || 'LeonSimple',
       avatarConfig: avatarConfig
     };
 
@@ -38,6 +38,61 @@ exports.getUserByMatricula = async (req, res) => {
     res.status(500).json({ error: 'Error al obtener el usuario' });
   }
 };
+exports.getAvatarByAlumno = async (req, res) => {
+  try {
+    const { alumnoId } = req.params;
+    
+    // Query para obtener el avatar del alumno
+    const query = `
+      SELECT 
+        a.id_avatar as avatar_id,
+        a.imagen_png,
+        a.accessory,
+        a.fecha_creacion as created_at,
+        al.nombres,
+        al.primer_apellido
+      FROM avatars a
+      INNER JOIN alumnos al ON a.id_alumno = al.id
+      WHERE a.id_alumno = ?
+      ORDER BY a.fecha_creacion DESC
+      LIMIT 1
+    `;
+    
+    const [rows] = await db.execute(query, [alumnoId]);
+    
+    if (rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'No se encontró avatar para este usuario'
+      });
+    }
+    
+    const avatar = rows[0];
+    
+    res.json({
+      success: true,
+      data: {
+        avatarId: avatar.avatar_id,
+        imagenPng: avatar.imagen_png,
+        accessory: avatar.accessory,
+        createdAt: avatar.created_at,
+        alumno: {
+          nombres: avatar.nombres,
+          apellido: avatar.primer_apellido
+        }
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error al obtener avatar:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor',
+      error: error.message
+    });
+  }
+};
+
 
 
 
@@ -91,3 +146,5 @@ exports.updateAvatar = async (req, res) => {
     res.status(500).json({ error: 'Error al guardar avatar' });
   }
 };
+
+
