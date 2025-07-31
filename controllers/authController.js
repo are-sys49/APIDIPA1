@@ -50,12 +50,11 @@ exports.checkMatricula = async (req, res) => {
       });
     }
 
-    // Verificar si la matrícula ya existe
-    const existingUser = await User.findOne({ 
-      matricula: matricula.trim().toUpperCase() 
-    });
+    // Verificar si la matrícula ya existe en MySQL
+    const query = 'SELECT id_alumno FROM users WHERE matricula = ?';
+    const [rows] = await db.execute(query, [matricula.trim().toUpperCase()]);
     
-    if (existingUser) {
+    if (rows.length > 0) {
       return res.status(409).json({ 
         success: false, 
         message: 'Esta matrícula ya está registrada' 
