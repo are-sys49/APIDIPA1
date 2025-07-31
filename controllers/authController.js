@@ -51,7 +51,7 @@ exports.checkMatricula = async (req, res) => {
     }
 
     // Verificar si la matrícula ya existe en MySQL
-    const query = 'SELECT id_alumno FROM users WHERE matricula = ?';
+    const query = 'SELECT id_alumno FROM alumnos WHERE matricula = ?';
     const [rows] = await db.execute(query, [matricula.trim().toUpperCase()]);
     
     if (rows.length > 0) {
