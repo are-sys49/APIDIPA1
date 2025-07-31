@@ -11,6 +11,9 @@ router.post('/register', authController.registerPassword);
 // Iniciar sesión (pantalla Login)
 router.post('/login', authController.login);
 
+//Chechar la matricula
+router.post('/check-matricula', authController.checkMatricula);
+
 // Actualizar avatar del usuario
 
 // Obtener configuración del avatar
@@ -19,5 +22,7 @@ router.post('/login', authController.login);
 router.get('/user/:matricula', userController.getUserData);
 
 router.get('/current-user', authController.getCurrentUser);
+
+
 
 module.exports = router;

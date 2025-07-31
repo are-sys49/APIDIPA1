@@ -39,6 +39,44 @@ exports.registerPassword = async (req, res) => {
   }
 };
 
+exports.checkMatricula = async (req, res) => {
+  try {
+    const { matricula } = req.body;
+    
+    if (!matricula) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'La matrícula es requerida' 
+      });
+    }
+
+    // Verificar si la matrícula ya existe
+    const existingUser = await User.findOne({ 
+      matricula: matricula.trim().toUpperCase() 
+    });
+    
+    if (existingUser) {
+      return res.status(409).json({ 
+        success: false, 
+        message: 'Esta matrícula ya está registrada' 
+      });
+    }
+
+    // Si no existe, la matrícula es válida para usar
+    res.json({ 
+      success: true, 
+      message: 'Matrícula disponible' 
+    });
+    
+  } catch (error) {
+    console.error('Error verificando matrícula:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error interno del servidor' 
+    });
+  }
+};
+
 // Actualizar avatar del usuario
 exports.updateAvatar = async (req, res) => {
   try {
