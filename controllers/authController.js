@@ -77,44 +77,56 @@ exports.checkMatricula = async (req, res) => {
 };
 
 // Actualizar avatar del usuario
-exports.updateAvatar = async (req, res) => {
+exports.checkMatricula = async (req, res) => {
   try {
-    const { userId, avatarConfig } = req.body;
+    const { matricula } = req.body;
     
-    // Validar que se reciban los datos necesarios
-    if (!userId || !avatarConfig) {
-      return res.status(400).json({ error: 'Datos incompletos' });
+    if (!matricula) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'La matrícula es requerida' 
+      });
     }
 
-    // Verificar que el usuario existe
-    const [existingUser] = await db.promise().query(
-      'SELECT id_alumno FROM alumnos WHERE id_alumno = ?',
-      [userId]
+    // Verificar si la matrícula existe en la tabla alumnos
+    const [alumno] = await db.promise().query(
+      'SELECT * FROM alumnos WHERE matricula = ?', 
+      [matricula.trim().toUpperCase()]
     );
-
-    if (existingUser.length === 0) {
-      return res.status(404).json({ error: 'Usuario no encontrado' });
+    
+    if (alumno.length === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Matrícula no encontrada en el sistema' 
+      });
     }
 
-    // Actualizar la configuración del avatar
-    await db.promise().query(
-      'UPDATE alumnos SET avatar_accessories = ? WHERE id_alumno = ?',
-      [avatarConfig, userId]
-    );
+    // Verificar si ya tiene contraseña registrada
+    if (alumno[0].password) {
+      return res.status(409).json({ 
+        success: false, 
+        message: 'Esta matrícula ya tiene una contraseña registrada' 
+      });
+    }
 
-    console.log(`Avatar actualizado para usuario ${userId}:`, avatarConfig);
-    
+    // Si existe la matrícula y no tiene contraseña, es válida para continuar
     res.json({ 
       success: true, 
-      message: 'Avatar actualizado correctamente',
-      userId: userId
+      message: 'Matrícula disponible para registro de contraseña',
+      alumno: {
+        matricula: alumno[0].matricula,
+        // Puedes agregar otros campos que necesites como nombre, etc.
+      }
     });
+    
   } catch (error) {
-    console.error('Error updating avatar:', error);
-    res.status(500).json({ error: 'Error al guardar avatar' });
+    console.error('Error verificando matrícula:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error interno del servidor' 
+    });
   }
 };
-
 // Obtener configuración del avatar
 exports.getAvatar = async (req, res) => {
   try {
